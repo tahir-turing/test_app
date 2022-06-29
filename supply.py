@@ -9,37 +9,46 @@ st.write("""
 
 st.sidebar.header('User Input Parameters')
 
-data = pd.read_csv('cluster_data_final.csv')
-data = data.drop(data.columns[[0]], axis=1)
+@st.cache(allow_output_mutation=True)
+def preprocess_data(filename):
+	data = pd.read_csv(filename)
+	data = data.drop(data.columns[[0]], axis=1)
 
-data['signup_date'] = data['signup_date'].fillna('')
-data['resume_upload_date'] = data['resume_upload_date'].fillna('')
-data['last_update_availability'] = data['last_update_availability'].fillna('')
-
-
-data['phase2_entry_date'] = [i[0:10] for i in data['phase2_entry_date']]
-data['signup_date'] = [i[0:10] for i in data['signup_date']]
-data['resume_upload_date'] = [i[0:10] for i in data['resume_upload_date']]
-data['last_update_availability'] = [i[0:10] for i in data['last_update_availability']]
-data['passed_stack_name'] = data['passed_stack_name'].fillna('[]')
-data['passed_skill_name'] = data['passed_skill_name'].fillna('[]')
-data['passed_stack_name'] = [i[1:-1].split("'")[1::2] for i in data['passed_stack_name']]
-data['passed_skill_name'] = [i[1:-1].split("'")[1::2] for i in data['passed_skill_name']]
-data['Region'] = data['Region'].fillna('Not Specified')
+	data['signup_date'] = data['signup_date'].fillna('')
+	data['resume_upload_date'] = data['resume_upload_date'].fillna('')
+	data['last_update_availability'] = data['last_update_availability'].fillna('')
 
 
-stacks_ = list(data['passed_stack_name'])
-stacks = [item for sublist in stacks_ for item in sublist]
-stacks = list(set(stacks))
+	data['phase2_entry_date'] = [i[0:10] for i in data['phase2_entry_date']]
+	data['signup_date'] = [i[0:10] for i in data['signup_date']]
+	data['resume_upload_date'] = [i[0:10] for i in data['resume_upload_date']]
+	data['last_update_availability'] = [i[0:10] for i in data['last_update_availability']]
+	data['passed_stack_name'] = data['passed_stack_name'].fillna('[]')
+	data['passed_skill_name'] = data['passed_skill_name'].fillna('[]')
+	data['passed_stack_name'] = [i[1:-1].split("'")[1::2] for i in data['passed_stack_name']]
+	data['passed_skill_name'] = [i[1:-1].split("'")[1::2] for i in data['passed_skill_name']]
+	data['Region'] = data['Region'].fillna('Not Specified')
 
-skills_ = list(data['passed_skill_name'])
-skills = [item for sublist in skills_ for item in sublist]
-skills = list(set(skills))
 
-clusters = sorted(data.cluster.unique())
-region = list(data.Region.unique())
+	stacks_ = list(data['passed_stack_name'])
+	stacks = [item for sublist in stacks_ for item in sublist]
+	stacks = list(set(stacks))
+
+	skills_ = list(data['passed_skill_name'])
+	skills = [item for sublist in skills_ for item in sublist]
+	skills = list(set(skills))
+
+	clusters = sorted(data.cluster.unique())
+	region = list(data.Region.unique())
+
+	stack_data = data.copy()
+	skill_data = data.copy()
+
+	return data, stacks, skills, clusters, region, stack_data, skill_data
+
+
 #stacks
-
+data, stacks, skills, clusters, region, stack_data, skill_data = preprocess_data('cluster_data_final.csv')
 
 #stacks = []
 #for i in range(data.shape[0]):
@@ -69,7 +78,7 @@ seniority_score = st.sidebar.slider('Seniority Score', 0.0, 10.0, 2.5)
 acc_score = st.sidebar.slider('ACC Score', 0.0, 15.0, 6.5)
 yoe = st.sidebar.slider('Years of Experience', 0.0, 50.0, 2.5)
 
-skill_data = data.copy()
+#skill_data = data.copy()
 #skill_data = skill_data[pd.DataFrame(skill_data.passed_skill_name.tolist()).isin(selected_skill).values]
 if selected_skill != []:
 	for i in selected_skill:
@@ -77,7 +86,7 @@ if selected_skill != []:
 #for i in selected_skill:
 #    skill_data = skill_data[skill_data.passed_skill_name.apply(lambda x: i in x)]
 
-stack_data = data.copy()
+#stack_data = data.copy()
 if selected_stack != []:
 	for i in selected_stack:
 	    stack_data = stack_data[pd.DataFrame(stack_data.passed_stack_name.tolist()).isin([i]).values]
